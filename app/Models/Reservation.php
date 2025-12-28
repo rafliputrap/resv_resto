@@ -9,22 +9,28 @@ class Reservation extends Model
 {
     use HasFactory;
 
+    protected $table = 'reservations';
+
     protected $fillable = [
         'table_id',
         'customer_name',
         'phone',
         'reservation_time',
-        'status'
+        'status',
+        'total'
     ];
 
-    // 🔗 RELASI
-    // reservasi milik satu meja
+    /**
+     * Relasi: reservasi milik satu meja
+     */
     public function table()
     {
         return $this->belongsTo(Table::class);
     }
 
-    // reservasi punya satu pembayaran
+    /**
+     * Relasi: reservasi punya satu pembayaran
+     */
     public function payment()
     {
         return $this->hasOne(Payment::class);

@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('table_id'); // nanti bisa FK manual
+            $table->foreignId('table_id')->constrained()->cascadeOnDelete();
             $table->string('customer_name');
             $table->string('phone');
-            $table->timestamp('reservation_time')->nullable();
-            $table->enum('status', ['pending', 'done'])->default('pending');
+            $table->dateTime('reservation_time')->nullable();
+            $table->string('status')->default('pending');
+            $table->integer('total'); // 🔥 INI YANG KURANG
             $table->timestamps();
         });
     }
