@@ -79,7 +79,9 @@ class UserController extends Controller
         session()->put('cart', $cart);
 
         $total = 0;
-        foreach ($cart as $item) { $total += $item['price'] * $item['quantity']; }
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
 
         return response()->json([
             'status' => 'success',
@@ -95,7 +97,9 @@ class UserController extends Controller
         if (empty($cart)) return redirect()->route('user.menu');
 
         $total = 0;
-        foreach ($cart as $item) { $total += $item['price'] * $item['quantity']; }
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
 
         return view('user.order', compact('cart', 'total'));
     }
@@ -131,7 +135,7 @@ class UserController extends Controller
         $reservation = Reservation::findOrFail($id);
 
         // Konfigurasi Midtrans
-        Config::$serverKey = 'Mid-server-Qek_Hvs9xu-vTUMbdA2DEoM3';
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
         Config::$isProduction = false;
         Config::$isSanitized = true;
         Config::$is3ds = true;
@@ -139,7 +143,7 @@ class UserController extends Controller
         $params = [
             'transaction_details' => [
                 // Gunakan order_number di Midtrans agar sinkron dengan database
-                'order_id' => $reservation->order_number . '-' . rand(1,99),
+                'order_id' => $reservation->order_number . '-' . rand(1, 99),
                 'gross_amount' => (int)$reservation->total,
             ],
             'customer_details' => [
@@ -160,13 +164,13 @@ class UserController extends Controller
     public function paymentSuccess($id)
     {
         $res = Reservation::findOrFail($id);
-        
+
         // Update status jadi paid
         $res->update(['status' => 'paid']);
 
         // BERSIHKAN SESSION: User dianggap selesai dan harus scan/input ulang jika mau pesan lagi
         session()->forget(['cart', 'table_id']);
-        session()->flush(); 
+        session()->flush();
 
         return view('user.thanks', compact('res'));
     }
