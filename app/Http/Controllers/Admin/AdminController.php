@@ -18,25 +18,48 @@ class AdminController extends Controller
     }
 
     /**
-     * PROSES LOGIN (sementara TANPA AUTH dulu)
+     * PROSES LOGIN
      */
     public function doLogin(Request $request)
     {
-        // nanti bisa ditambah validasi admin
         return redirect('/admin/dashboard');
     }
 
     /**
      * DASHBOARD ADMIN
+     * Menampilkan semua data reservasi
      */
     public function dashboard()
     {
-        $totalReservasi = Reservation::count();
-        $totalMeja = Table::count();
+        // Ambil semua data reservasi, urutkan yang terbaru di atas
+        $reservations = Reservation::orderBy('created_at', 'desc')->get();
 
-        return view('admin.dashboard', compact(
-            'totalReservasi',
-            'totalMeja'
-        ));
+        // Kirim variabel $reservations ke view dashboard
+        return view('admin.dashboard', compact('reservations'));
+    }
+
+    /**
+     * TAMBAHAN: UPDATE STATUS (ACC / TOLAK)
+     * Fungsi ini untuk memproses tombol 'Terima' atau 'Tolak'
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $res = Reservation::findOrFail($id);
+        $res->status = $request->status; // Mengambil value 'confirmed' atau 'rejected' dari hidden input
+        $res->save();
+
+        return back()->with('success', 'Status pesanan meja ' . $res->table_id . ' berhasil diupdate!');
+    }
+
+    /**
+     * TAMBAHAN: LIHAT DETAIL PESANAN
+     * Fungsi ini untuk menampilkan menu apa saja yang dipesan (Nasi Goreng dkk)
+     */
+    public function show($id)
+    {
+        $reservation = Reservation::findOrFail($id);
+
+        // Mengarahkan ke file resources/views/admin/show.blade.php
+        return view('admin.show', compact('reservation'));
     }
 }

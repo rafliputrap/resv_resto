@@ -17,7 +17,9 @@ class Reservation extends Model
         'phone',
         'reservation_time',
         'status',
-        'total'
+        'total',
+        'items',
+        'order_number'
     ];
 
     /**

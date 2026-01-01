@@ -9,19 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('tables', function (Blueprint $table) {
             $table->id();
-            $table->string('table_number'); // A1, A2
+            $table->string('table_number')->unique();
             $table->integer('capacity');
-            $table->string('qr_token')->unique();
-            $table->enum('status', ['available', 'occupied', 'reserved'])
-                ->default('available');
+            $table->enum('status', ['available', 'occupied', 'pending'])->default('available');
+
+            // Tambahkan kolom ini:
+            $table->integer('pos_x')->default(0); // Koordinat X
+            $table->integer('pos_y')->default(0); // Koordinat Y
+            $table->string('type')->default('bulat'); // bulat atau kotak
+
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */

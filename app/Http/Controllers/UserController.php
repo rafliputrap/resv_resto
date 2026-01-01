@@ -6,28 +6,21 @@ use Illuminate\Http\Request;
 use App\Models\Table;
 use App\Models\Menu;
 use App\Models\Reservation;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class UserController extends Controller
 {
-    /* ===============================
-     * 1. HALAMAN AWAL
-     * =============================== */
+    // 1. Halaman Awal & Pilih Meja
     public function askTable()
     {
-        // reset session biar bisa test ulang
         session()->forget(['table_id', 'cart']);
-
         return view('user.ask-table');
     }
 
-    /* ===============================
-     * 2. PILIH MEJA (DENAH)
-     * =============================== */
     public function selectTable()
     {
-        // AMBIL SEMUA MEJA + POSISI
         $tables = Table::with('layout')->get();
-
         return view('user.select-table', compact('tables'));
     }
 
@@ -38,112 +31,143 @@ class UserController extends Controller
         }
 
         $table = Table::findOrFail($request->table_id);
-
-        // ❌ TIDAK ADA UPDATE STATUS (MODE TEST)
-        // $table->update(['status' => 'occupied']);
-
-        // simpan meja ke session
+        session()->forget('cart');
         session(['table_id' => $table->id]);
 
-        // pindah ke menu
-        return redirect('/menu');
+        return redirect()->route('user.menu');
     }
 
-    /* ===============================
-     * 3. HALAMAN MENU
-     * =============================== */
+    // 2. Halaman Menu & Keranjang (AJAX)
     public function menu()
     {
         $tableId = session('table_id');
+        if (!$tableId) return redirect()->route('select.table');
 
-        if (!$tableId) {
-            return redirect('/select-table');
+        $table = Table::find($tableId);
+        if (!$table) {
+            session()->forget('table_id');
+            return redirect()->route('select.table');
         }
 
-        $table = Table::findOrFail($tableId);
-        $menus = Menu::all();
+        $menus = Menu::all()->groupBy('category');
+        $totalHarga = 0;
+        $cart = session('cart', []);
 
-        return view('user.menu', compact('table', 'menus'));
+        foreach ($cart as $details) {
+            $totalHarga += ($details['price'] ?? 0) * ($details['quantity'] ?? 0);
+        }
+
+        return view('user.menu', compact('table', 'menus', 'totalHarga'));
     }
 
-    /* ===============================
-     * 4. PROSES PILIH MENU
-     * =============================== */
-    public function order(Request $request)
+    public function addToCart(Request $request)
     {
-        // ambil menu yg qty > 0
-        $cart = array_filter($request->menu ?? [], fn ($q) => $q > 0);
+        $menu = Menu::find($request->id);
+        if (!$menu) return response()->json(['status' => 'error'], 404);
 
-        if (empty($cart)) {
-            return back()->with('error', 'Pilih minimal 1 menu');
+        $cart = session()->get('cart', []);
+        if (isset($cart[$request->id])) {
+            $cart[$request->id]['quantity']++;
+        } else {
+            $cart[$request->id] = [
+                "name" => $menu->name,
+                "quantity" => 1,
+                "price" => $menu->price,
+                "image" => $menu->image
+            ];
         }
+        session()->put('cart', $cart);
 
-        session(['cart' => $cart]);
+        $total = 0;
+        foreach ($cart as $item) { $total += $item['price'] * $item['quantity']; }
 
-        return redirect('/order');
+        return response()->json([
+            'status' => 'success',
+            'total_harga' => number_format($total, 0, ',', '.'),
+            'cart_count' => count($cart)
+        ]);
     }
 
+    // 3. Checkout & Simpan Pesanan (Logika Order Number Baru)
     public function orderPage()
     {
-        $cart = session('cart');
-
-        if (!$cart) {
-            return redirect('/menu');
-        }
-
-        $menus = Menu::whereIn('id', array_keys($cart))->get();
+        $cart = session('cart', []);
+        if (empty($cart)) return redirect()->route('user.menu');
 
         $total = 0;
-        foreach ($menus as $m) {
-            $total += $m->price * $cart[$m->id];
-        }
+        foreach ($cart as $item) { $total += $item['price'] * $item['quantity']; }
 
-        return view('user.order', compact('menus', 'cart', 'total'));
+        return view('user.order', compact('cart', 'total'));
     }
 
-    /* ===============================
-     * 5. PAYMENT
-     * =============================== */
-    public function payment()
-    {
-        $cart = session('cart');
-
-        if (!$cart) {
-            return redirect('/menu');
-        }
-
-        $menus = Menu::whereIn('id', array_keys($cart))->get();
-
-        $total = 0;
-        foreach ($menus as $m) {
-            $total += $m->price * $cart[$m->id];
-        }
-
-        return view('user.payment', compact('menus', 'cart', 'total'));
-    }
-
-    /* ===============================
-     * 6. SIMPAN (TEST MODE)
-     * =============================== */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required',
             'phone' => 'required',
             'total' => 'required|numeric',
+            'table_id' => 'required'
         ]);
 
-        Reservation::create([
-            'table_id' => session('table_id'),
+        // GENERATE ORDER NUMBER UNIK: JamMenit-AngkaAcak
+        $uniqueOrderCode = date('Hi') . '-' . rand(100, 999);
+
+        $reservation = Reservation::create([
+            'order_number'  => $uniqueOrderCode, // Simpan kode unik
+            'table_id'      => $request->table_id,
             'customer_name' => $request->name,
-            'phone' => $request->phone,
-            'total' => $request->total,
-            'status' => 'test',
+            'phone'         => $request->phone,
+            'total'         => $request->total,
+            'status'        => 'pending_payment',
+            'items'         => json_encode(session('cart', [])),
         ]);
 
-        // reset biar bisa klik denah ulang
-        session()->forget(['table_id', 'cart']);
+        return redirect()->route('user.payment', ['id' => $reservation->id]);
+    }
 
-        return redirect('/')->with('success', 'TEST ORDER BERHASIL');
+    // 4. Integrasi Midtrans
+    public function payment($id)
+    {
+        $reservation = Reservation::findOrFail($id);
+
+        // Konfigurasi Midtrans
+        Config::$serverKey = 'Mid-server-Qek_Hvs9xu-vTUMbdA2DEoM3';
+        Config::$isProduction = false;
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        $params = [
+            'transaction_details' => [
+                // Gunakan order_number di Midtrans agar sinkron dengan database
+                'order_id' => $reservation->order_number . '-' . rand(1,99),
+                'gross_amount' => (int)$reservation->total,
+            ],
+            'customer_details' => [
+                'first_name' => $reservation->customer_name,
+                'phone' => $reservation->phone,
+            ],
+        ];
+
+        try {
+            $snapToken = Snap::getSnapToken($params);
+            return view('user.payment', compact('reservation', 'snapToken'));
+        } catch (\Exception $e) {
+            return "Gagal membuat token Midtrans: " . $e->getMessage();
+        }
+    }
+
+    // 5. Halaman Sukses & Finish
+    public function paymentSuccess($id)
+    {
+        $res = Reservation::findOrFail($id);
+        
+        // Update status jadi paid
+        $res->update(['status' => 'paid']);
+
+        // BERSIHKAN SESSION: User dianggap selesai dan harus scan/input ulang jika mau pesan lagi
+        session()->forget(['cart', 'table_id']);
+        session()->flush(); 
+
+        return view('user.thanks', compact('res'));
     }
 }
