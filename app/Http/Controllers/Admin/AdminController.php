@@ -6,60 +6,84 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
 use App\Models\Table;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
     /**
-     * HALAMAN LOGIN ADMIN
-     */
-    public function login()
-    {
-        return view('admin.login');
-    }
-
-    /**
-     * PROSES LOGIN
-     */
-    public function doLogin(Request $request)
-    {
-        return redirect('/admin/dashboard');
-    }
-
-    /**
-     * DASHBOARD ADMIN
-     * Menampilkan semua data reservasi
+     * DASHBOARD: Menampilkan Meja yang SEDANG AKTIF (Masih Makan)
      */
     public function dashboard()
     {
-        // Ambil semua data reservasi, urutkan yang terbaru di atas
-        $reservations = Reservation::orderBy('created_at', 'desc')->get();
+        // WAJIB: Pakai with() supaya data menu ikut terbaca di modal detail
+        $reservations = Reservation::with(['reservationDetails.menu'])
+            ->whereDate('created_at', date('Y-m-d'))
+            ->whereIn('status', ['paid', 'confirmed'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        // Kirim variabel $reservations ke view dashboard
-        return view('admin.dashboard', compact('reservations'));
+        // Statistik tetap sama
+        $totalOmzet = Reservation::whereDate('created_at', date('Y-m-d'))->where('status', 'completed')->sum('total');
+        $totalPengunjung = Reservation::whereDate('created_at', date('Y-m-d'))->where('status', 'completed')->count();
+        $activeTables = $reservations->unique('table_id')->count();
+
+        return view('admin.dashboard', compact('reservations', 'totalOmzet', 'totalPengunjung', 'activeTables'));
     }
 
-    /**
-     * TAMBAHAN: UPDATE STATUS (ACC / TOLAK)
-     * Fungsi ini untuk memproses tombol 'Terima' atau 'Tolak'
-     */
-    public function updateStatus(Request $request, $id)
+    public function history(Request $request)
     {
-        $res = Reservation::findOrFail($id);
-        $res->status = $request->status; // Mengambil value 'confirmed' atau 'rejected' dari hidden input
-        $res->save();
+        $filter = $request->get('filter', 'daily');
+        $date = $request->get('date', date('Y-m-d'));
+        $now = Carbon::now();
 
-        return back()->with('success', 'Status pesanan meja ' . $res->table_id . ' berhasil diupdate!');
+        $query = Reservation::with(['reservationDetails.menu'])
+            ->where('status', 'completed');
+
+        // Logic Filter Gabungan
+        if ($filter == 'daily') {
+            $query->whereDate('created_at', $date);
+        } elseif ($filter == 'weekly') {
+            $query->whereBetween('created_at', [$now->startOfWeek()->format('Y-m-d'), $now->endOfWeek()->format('Y-m-d')]);
+        } elseif ($filter == 'monthly') {
+            $query->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year);
+        } elseif ($filter == 'yearly') {
+            $query->whereYear('created_at', $now->year);
+        }
+
+        $totalOmzet = (clone $query)->sum('total');
+        $totalPengunjung = (clone $query)->count();
+
+        $history = $query->latest('completed_at')->get()->map(function ($item) {
+            if ($item->created_at && $item->completed_at) {
+                $item->duration = Carbon::parse($item->created_at)->diffForHumans(Carbon::parse($item->completed_at), true);
+            } else {
+                $item->duration = "-";
+            }
+            return $item;
+        });
+
+        return view('admin.history', compact('history', 'date', 'totalOmzet', 'totalPengunjung', 'filter'));
     }
 
-    /**
-     * TAMBAHAN: LIHAT DETAIL PESANAN
-     * Fungsi ini untuk menampilkan menu apa saja yang dipesan (Nasi Goreng dkk)
-     */
-    public function show($id)
+    public function resetTable($table_id)
     {
-        $reservation = Reservation::findOrFail($id);
+        // 1. Cari reservasi yang aktif di meja tersebut dan selesaikan
+        Reservation::where('table_id', $table_id)
+            ->whereIn('status', ['paid', 'confirmed'])
+            ->update([
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
 
-        // Mengarahkan ke file resources/views/admin/show.blade.php
-        return view('admin.show', compact('reservation'));
+        // 2. Reset status fisik meja jadi 'available' agar di denah jadi putih/kosong
+        Table::where('id', $table_id)->update(['status' => 'available']);
+
+        return redirect()->route('admin.dashboard')->with('success', 'Meja berhasil diselesaikan!');
+    }
+
+    public function destroy($id)
+    {
+        Reservation::findOrFail($id)->delete(); // Hapus data salah
+        return back()->with('success', 'Data dihapus!');
     }
 }

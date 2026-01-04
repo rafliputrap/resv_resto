@@ -18,8 +18,14 @@ class Reservation extends Model
         'reservation_time',
         'status',
         'total',
-        'items',
-        'order_number'
+        'items', // Kalau lo pake detail tabel, field ini sebenernya udah gak perlu
+        'order_number',
+        'completed_at', // Tambahin ini
+        'duration'      // Tambahin ini
+    ];
+
+    protected $casts = [
+        'completed_at' => 'datetime',
     ];
 
     /**
@@ -30,6 +36,10 @@ class Reservation extends Model
         return $this->belongsTo(Table::class);
     }
 
+    public function reservationDetails()
+    {
+        return $this->hasMany(ReservationDetail::class, 'reservation_id');
+    }
     /**
      * Relasi: reservasi punya satu pembayaran
      */

@@ -4,7 +4,7 @@
 <div class="container py-4">
     <div class="card border-0 shadow-sm p-4">
         <h2 class="fw-bold mb-4">Detail Pesanan Meja #{{ $reservation->table_id }}</h2>
-        
+
         <div class="row mb-4 bg-light p-3 rounded">
             <div class="col-md-6">
                 <small class="text-muted">Nama Pelanggan:</small>
@@ -25,21 +25,20 @@
                 </tr>
             </thead>
             <tbody>
-                @php $items = json_decode($reservation->items, true); @endphp
-
-                @forelse($items ?? [] as $item)
+                {{-- Kita langsung looping dari relasi yang udah kita 'with' di controller tadi --}}
+                @forelse($reservation->reservationDetails as $detail)
                 <tr>
-                    <td class="fw-bold">{{ $item['name'] }}</td>
-                    <td class="text-center">{{ $item['quantity'] }}x</td>
+                    {{-- Ambil nama menu dari relasi menu --}}
+                    <td class="fw-bold">{{ $detail->menu->name }}</td>
+                    <td class="text-center">{{ $detail->quantity }}x</td>
                     <td class="text-end">
-                        Rp{{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
+                        Rp{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }}
                     </td>
                 </tr>
                 @empty
                 <tr>
                     <td colspan="3" class="text-center py-4 text-danger">
-                        <b>Data menu masih NULL di database!</b><br>
-                        Saran: Pastikan 'items' sudah ada di $fillable di Model Reservation.
+                        <b>Detail pesanan tidak ditemukan!</b>
                     </td>
                 </tr>
                 @endforelse

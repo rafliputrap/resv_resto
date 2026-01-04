@@ -39,6 +39,8 @@ Route::get('/payment/{id}', [UserController::class, 'payment'])->name('user.paym
 // Redirect dari Midtrans ke sini kalau SUKSES
 Route::get('/payment-success/{id}', [UserController::class, 'paymentSuccess'])->name('payment.success');
 
+Route::get('/new-session', [UserController::class, 'startNewSession'])->name('customer.new-session');
+
 Route::get('/', [UserController::class, 'askTable'])->name('ask.table');
 
 /*
@@ -47,27 +49,27 @@ Route::get('/', [UserController::class, 'askTable'])->name('ask.table');
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
     // 🔐 AUTH
-    Route::get('/login', [AdminController::class, 'login'])->name('admin.login');
+    Route::get('/login', [AdminController::class, 'login'])->name('login');
     Route::post('/login', [AdminController::class, 'doLogin']);
 
-    // 📊 DASHBOARD (Tambahkan ->name agar tombol 'Kembali' di detail tidak error)
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    // 📊 DASHBOARD (Panggil di Blade: route('admin.dashboard'))
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
-    // 🪑 TABLES & 🍔 MENUS (Tetap sama)
-    Route::get('/tables', [TableController::class, 'index']);
-    Route::post('/tables', [TableController::class, 'store']);
-    Route::get('/menus', [MenuController::class, 'index']);
-    Route::post('/menus', [MenuController::class, 'store']);
+    // 🪑 TABLES & 🍔 MENUS
+    Route::get('/tables', [TableController::class, 'index'])->name('tables.index');
+    Route::post('/tables', [TableController::class, 'store'])->name('tables.store');
+    Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
+    Route::post('/menus', [MenuController::class, 'store'])->name('menus.store');
 
-    // 📋 RESERVATIONS
-    // Gunakan AdminController sesuai dengan kodingan Controller yang lo buat sebelumnya
-    Route::get('/reservations', [AdminController::class, 'dashboard'])->name('admin.reservations.index');
+    // 📋 ACTIONS
+    Route::post('/reservations/{id}/status', [AdminController::class, 'updateStatus'])->name('reservation.status');
     
-    // Aksi ACC/Tolak (Wajib POST)
-    Route::post('/reservations/{id}/status', [AdminController::class, 'updateStatus'])->name('admin.reservation.status');
-    
-    // Lihat Detail Pesanan (Nasi Goreng dkk)
-    Route::get('/reservations/{id}', [AdminController::class, 'show'])->name('admin.reservation.show');
+    // Ini yang tadi bikin error 'not defined'
+    Route::post('/table/reset/{table_id}', [AdminController::class, 'resetTable'])->name('resetTable');
+
+    // 📜 HISTORY & REPORT
+    Route::get('/history', [AdminController::class, 'history'])->name('history');
+    Route::delete('/history/{id}', [AdminController::class, 'destroy'])->name('history.delete');
 });
