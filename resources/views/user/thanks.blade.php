@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesanan Berhasil - #{{ $res->order_number }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 h-screen flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-8 text-center">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-8 text-center" style="position: relative; z-index: 10;">
         <div class="mb-4 inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full">
             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -25,7 +27,7 @@
         <div class="text-left space-y-3 mb-8 text-sm border-t pt-6">
             <div class="flex justify-between">
                 <span class="text-gray-500">Pelanggan:</span>
-                <span class="font-semibold text-gray-800">{{ $res->customer_name }}</span>
+                <span class="font-semibold text-gray-800 text-uppercase">{{ $res->customer_name }}</span>
             </div>
             <div class="flex justify-between">
                 <span class="text-gray-500">Meja:</span>
@@ -37,11 +39,30 @@
             </div>
         </div>
 
-        <p class="text-xs text-gray-400 mb-6 italic">*Silakan tunjukkan layar ini atau sebutkan nomor pesanan kepada pelayan jika diperlukan.</p>
+        <p class="text-xs text-gray-400 mb-6 italic">*Silakan tunjukkan layar ini kepada pelayan jika diperlukan.</p>
 
-        <a href="{{ url('/') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition duration-200">
-            Pesan Menu Lain
-        </a>
+        {{-- AREA TOMBOL --}}
+        <div class="mt-8 space-y-4">
+            {{-- TOMBOL 1: Cuma buat nambah pesanan (Meja tetap Terisi/Occupied) --}}
+            <a href="{{ route('user.menu') }}"
+                class="block w-full bg-white border-2 border-blue-600 text-blue-600 font-bold py-4 rounded-xl shadow-sm text-center hover:bg-blue-50 transition">
+                TAMBAH PESANAN LAIN
+            </a>
+
+            {{-- TOMBOL 2: Selesaikan Sesi (Meja jadi Kosong/Available) --}}
+            <form action="{{ route('customer.finishTable', $res->table_id) }}" method="POST">
+                @csrf
+                <button type="submit"
+                    class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-lg text-center">
+                    SELESAIKAN & KOSONGKAN MEJA
+                </button>
+            </form>
+
+            <p class="mt-4 text-[10px] text-gray-400 uppercase tracking-widest text-center">
+                Pilih "Selesaikan" jika Anda sudah ingin meninggalkan meja.
+            </p>
+        </div>
     </div>
 </body>
+
 </html>
