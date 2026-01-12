@@ -1,111 +1,154 @@
-<div class="welcome-container">
-    <h2 class="welcome-title">Selamat Datang! / Welcome!</h2>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Hafa Warehouse</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     
-    <div class="options-grid">
-        <a href="/select-table?mode=reorder" class="btn-option btn-orange">
-            <div class="text-main">Saya Sudah Ada Meja</div>
-        </a>
-
-        <a href="{{ route('customer.new-session') }}" class="btn-option btn-blue">
-            <div class="text-main">Saya Belum Ada Meja Ingin Pesan Tempat</div>
-        </a>
-    </div>
-
-    <div class="footer-note">
-        Klik "Sudah Ada Meja" jika ingin menambah pesanan di meja Anda.
-    </div>
-</div>
-
-<style>
-    body {
-        background-color: #e0ddd5; /* Warna background cream seperti di gambar */
-        font-family: 'Arial', sans-serif;
-    }
-
-    .welcome-container {
-        text-align: center;
-        padding: 50px 20px;
-        max-width: 900px;
-        margin: 0 auto;
-    }
-
-    .welcome-title {
-        color: #5d5246;
-        margin-bottom: 30px;
-        font-weight: normal;
-    }
-
-    /* Grid Layout agar tombol bersebelahan */
-    .options-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    /* Styling Dasar Tombol */
-    .btn-option {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        padding: 40px 20px;
-        border-radius: 15px;
-        color: white;
-        transition: transform 0.2s, box-shadow 0.2s;
-        min-height: 200px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .btn-option:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        color: white;
-    }
-
-    /* Warna Gradasi Oranye */
-    .btn-orange {
-        background: linear-gradient(135deg, #e69138 0%, #d17a21 100%);
-    }
-
-    /* Warna Gradasi Biru */
-    .btn-blue {
-        background: linear-gradient(135deg, #76b5d9 0%, #5a99c2 100%);
-    }
-
-    .icon-wrapper {
-        margin-bottom: 15px;
-    }
-
-    /* Filter putih untuk icon agar sesuai gambar */
-    .icon-wrapper img {
-        filter: brightness(0) invert(1);
-    }
-
-    .text-main {
-        font-size: 1.2rem;
-        font-weight: bold;
-        margin-bottom: 5px;
-        line-height: 1.2;
-    }
-
-    .text-sub {
-        font-size: 0.85rem;
-        opacity: 0.9;
-        font-style: italic;
-    }
-
-    .footer-note {
-        margin-top: 20px;
-        color: #777;
-        font-size: 0.9rem;
-    }
-
-    /* Responsive untuk HP agar tombol tumpuk vertikal */
-    @media (max-width: 600px) {
-        .options-grid {
-            grid-template-columns: 1fr;
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-    }
-</style>
+
+        body {
+            /* PATH DISESUAIKAN KE public/image */
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url("{{ asset('image/bg-cafe.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            z-index: 10;
+        }
+
+        .logo-placeholder {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1rem;
+            margin-bottom: 40px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .button-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 25px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: #ff9f43; /* Warna Orange Khas Hafa */
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 20px rgba(255, 159, 67, 0.3);
+        }
+
+        .text-box {
+            text-align: left;
+        }
+
+        .text-box span {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .text-box small {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            .card-btn { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo-placeholder">HAFA.</div>
+        <h1>Selamat Datang</h1>
+        <p>Experience the best warehouse cafe</p>
+
+        <div class="button-stack">
+            <a href="{{ route('select.table', ['mode' => 'reorder']) }}" class="card-btn">
+                <div class="icon-box">
+                    <i class="fas fa-chair"></i>
+                </div>
+                <div class="text-box">
+                    <span>Saya Sudah Ada Meja</span>
+                    <small>Klik jika Anda ingin menambah pesanan</small>
+                </div>
+            </a>
+
+            <a href="{{ route('select.table') }}" class="card-btn">
+                <div class="icon-box" style="background: #ffffff; color: #1a1a1a;">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <div class="text-box">
+                    <span>Saya Belum Ada Meja</span>
+                    <small>Pilih meja yang tersedia sekarang</small>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
