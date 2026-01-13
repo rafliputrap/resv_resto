@@ -72,6 +72,11 @@ class MenuController extends Controller
         return view('admin.menu_edit', compact('menu')); // Buat file ini jika perlu
     }
 
+    public function create()
+    {
+        return view('admin.create');
+    }
+
     public function update(Request $request, $id)
     {
         // 1. Cari data menu berdasarkan ID
