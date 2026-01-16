@@ -63,6 +63,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/history', [AdminController::class, 'history'])->name('history');
     Route::delete('/history/{id}', [AdminController::class, 'destroy'])->name('history.destroy');
 
+    Route::get('/history/export', [AdminController::class, 'exportHistory'])->name('history.export');
+    
     // LOGOUT ADMIN
     Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
 });

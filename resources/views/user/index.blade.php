@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Reservasi Meja</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 </head>
 <body>
 <h1>Reservasi Meja: {{ $table->table_number }}</h1>

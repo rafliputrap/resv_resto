@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Hafa Warehouse - Menu</title>
+    <title>Daftar Menu</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <style>
         :root {
             --primary-color: #1a1a1a;
@@ -249,7 +250,7 @@
     <div class="header-banner"></div>
     <div class="container">
         <div class="shop-info">
-            <h2>Hafa Warehouse</h2>
+            <h2>Warehouse Cafe</h2>
             <p style="margin:8px 0 0; color:var(--text-muted); font-size: 14px;">Meja: <strong>{{ $table->table_number }}</strong></p>
         </div>
 

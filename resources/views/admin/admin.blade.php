@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Kedai Admin</title>
+    <title>Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
@@ -117,12 +118,12 @@
     <div class="wrapper">
         <nav id="sidebar">
             <div class="sidebar-header">
-                <h5 class="fw-bold mb-0" style="letter-spacing: 2px;">HAFA.</h5>
+                <h5 class="fw-bold mb-0" style="letter-spacing: 2px;">Warehouse Cafe</h5>
             </div>
 
             <div class="admin-profile text-center">
                 <h6 class="fw-bold mb-0">ADMIN RESTO</h6>
-                <small class="opacity-75">Hafa Warehouse</small>
+                <small class="opacity-75">Warehouse</small>
             </div>
 
             <ul class="list-unstyled components">
@@ -158,7 +159,7 @@
                     <button type="button" id="sidebarCollapse" class="btn btn-outline-dark btn-sm border-0">
                         <i class="fas fa-bars fa-lg"></i>
                     </button>
-                    <span class="ms-3 fw-bold text-secondary small text-uppercase">Kedai Admin Resto</span>
+                    <span class="ms-3 fw-bold text-secondary small text-uppercase">Admin Resto</span>
                 </div>
 
                 <form action="{{ route('admin.logout') }}" method="POST" class="m-0">

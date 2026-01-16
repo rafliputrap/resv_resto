@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Hafa Warehouse</title>
+    <title>Admin Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -145,7 +146,7 @@
             <i class="fas fa-warehouse"></i>
         </div>
         <h2>Admin Login</h2>
-        <p>Hafa Warehouse Management System</p>
+        <p>Warehouse Cafe Management System</p>
 
         @if(session('error'))
             <div class="error-msg">

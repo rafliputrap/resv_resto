@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -123,9 +124,8 @@
 <body>
 
     <div class="container">
-        <div class="logo-placeholder">HAFA.</div>
-        <h1>Selamat Datang</h1>
-        <p>Experience the best warehouse cafe</p>
+        <div class="logo-placeholder">Selamat Datang</div>
+        <p>Experience the best warehouse</p>
 
         <div class="button-stack">
             <a href="{{ route('select.table', ['mode' => 'reorder']) }}" class="card-btn">
