@@ -15,4 +15,23 @@ class Table extends Model
     {
         return $this->hasOne(TableLayout::class, 'table_id');
     }
+
+    public function getStatusLabel()
+    {
+        return match($this->status) {
+            'available' => 'Tersedia',
+            'occupied' => 'Digunakan',
+            default => 'Tidak Dikenal'
+        };
+    }
+
+    public function isAvailable()
+    {
+        return $this->status === 'available';
+    }
+
+    public function getDisplayNumber()
+    {
+        return 'Meja ' . $this->table_number;
+    }
 }

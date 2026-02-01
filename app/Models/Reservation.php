@@ -47,4 +47,30 @@ class Reservation extends Model
     {
         return $this->hasOne(Payment::class);
     }
+
+    public function getStatusDisplay()
+    {
+        return match($this->status) {
+            'pending' => 'Menunggu',
+            'confirmed' => 'Dikonfirmasi',
+            'completed' => 'Selesai',
+            'cancelled' => 'Dibatalkan',
+            default => 'Tidak Dikenal'
+        };
+    }
+
+    public function getTotalFormatted()
+    {
+        return 'Rp ' . number_format($this->total ?? 0, 0, ',', '.');
+    }
+
+    public function isCompleted()
+    {
+        return $this->status === 'completed';
+    }
+
+    public function getFormattedReservationTime()
+    {
+        return date('d/m/Y H:i', strtotime($this->reservation_time));
+    }
 }

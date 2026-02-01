@@ -16,4 +16,24 @@ class ReservationDetail extends Model
         // Relasi ke tabel Menu buat ambil Nama Makanan/Minuman
         return $this->belongsTo(Menu::class, 'menu_id');
     }
+
+    public function getSubtotal()
+    {
+        return $this->quantity * $this->price;
+    }
+
+    public function getSubtotalFormatted()
+    {
+        return 'Rp ' . number_format($this->getSubtotal(), 0, ',', '.');
+    }
+
+    public function getQuantityDisplay()
+    {
+        return $this->quantity . ' x';
+    }
+
+    public function getPriceFormatted()
+    {
+        return 'Rp ' . number_format($this->price, 0, ',', '.');
+    }
 }

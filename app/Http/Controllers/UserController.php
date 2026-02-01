@@ -53,11 +53,11 @@ class UserController extends Controller
     {
         $tableId = session('table_id');
         if (!$tableId) return redirect()->route('select.table');
-        
+
         $table = Table::find($tableId);
         $menus = Menu::all()->groupBy('category');
         $cart = session('cart', []);
-        
+
         $totalHarga = 0;
         foreach ($cart as $item) {
             $totalHarga += $item['price'] * $item['quantity'];
@@ -89,9 +89,11 @@ class UserController extends Controller
         }
 
         session()->put('cart', $cart);
-        
+
         $total = 0;
-        foreach ($cart as $item) { $total += $item['price'] * $item['quantity']; }
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
 
         return response()->json([
             'status' => 'success',
@@ -99,6 +101,37 @@ class UserController extends Controller
             'cart_count' => count($cart)
         ]);
     }
+
+    public function removeFromCart(Request $request)
+    {
+        $cart = session()->get('cart', []);
+        $menuId = $request->id;
+
+        if (!isset($cart[$menuId])) {
+            return response()->json(['status' => 'error', 'message' => 'Item tidak ditemukan'], 404);
+        }
+
+        // Kurangi quantity
+        if ($cart[$menuId]['quantity'] > 1) {
+            $cart[$menuId]['quantity']--;
+        } else {
+            unset($cart[$menuId]); // kalau tinggal 1, hapus sekalian
+        }
+
+        session()->put('cart', $cart);
+
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'total_harga' => number_format($total, 0, ',', '.'),
+            'cart_count' => count($cart)
+        ]);
+    }
+
 
     // --- CHECKOUT & PEMBAYARAN ---
 
@@ -112,7 +145,9 @@ class UserController extends Controller
         $table_number = $table ? $table->number : session('table_id');
 
         $total = 0;
-        foreach ($cart as $item) { $total += $item['price'] * $item['quantity']; }
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
 
         return view('user.order', compact('cart', 'total', 'table_number'));
     }
@@ -142,7 +177,9 @@ class UserController extends Controller
                     'price'          => $item['price'],
                 ]);
                 $menu = Menu::find($menuId);
-                if ($menu) { $menu->decrement('stock', $item['quantity']); }
+                if ($menu) {
+                    $menu->decrement('stock', $item['quantity']);
+                }
             }
 
             // 3. Midtrans
@@ -176,7 +213,9 @@ class UserController extends Controller
         $res->update(['status' => 'paid']);
 
         $table = Table::find($res->table_id);
-        if ($table) { $table->update(['status' => 'occupied']); }
+        if ($table) {
+            $table->update(['status' => 'occupied']);
+        }
 
         session()->forget(['cart']); // table_id jangan dihapus dulu biar bisa dipake di thanks page
         return view('user.thanks', compact('res'));
@@ -185,7 +224,9 @@ class UserController extends Controller
     public function finishTable($table_id)
     {
         $table = Table::find($table_id);
-        if ($table) { $table->update(['status' => 'available']); }
+        if ($table) {
+            $table->update(['status' => 'available']);
+        }
         session()->forget(['cart', 'table_id']);
         return redirect()->route('ask.table');
     }
